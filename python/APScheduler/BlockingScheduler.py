@@ -1,25 +1,11 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.schedulers.base import BaseScheduler
 
 sched = BlockingScheduler()
-
 
 
 @sched.scheduled_job('interval', seconds=3)
 def timed_job():
     print('This job is run every three seconds.')
-
-
-# @sched.scheduled_job('interval', seconds=5)
-# def show_jobs():
-#     basesch = BaseScheduler()
-#     print('print jobs vvvvvvvvvv ')
-#     basesch.print_jobs()
-#     print('print jobs ^^^^^^^^^^ ')
-#     print('get jobs   vvvvvvvvvv ')
-#     basesch.get_job()
-#     print('get jobs   ^^^^^^^^^^ ')
-#     print('This job is run every 5 seconds.')
 
 
 @sched.scheduled_job('cron', day_of_week='mon-fri', hour='0-9', minute='30-59', second='*/3')
