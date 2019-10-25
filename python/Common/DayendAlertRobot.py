@@ -2,6 +2,7 @@ import datetime
 import imaplib
 import email
 import subprocess
+import sys
 import traceback
 import time
 
@@ -12,15 +13,12 @@ class MailRobot(object):
         self.imap_host = 'imap.mxhichina.com'
         self.imap_port = '993'
         self.login_id = 'tong.jia@detvista.com'
-        self.login_pass = 'Tong12121212'
+        self.login_pass = 'Tong1234qwer'
         self.conn = ''
         self.login()
         self.appscript = '''
             do shell script "open facetime://+8618939933901"
             tell application "System Events"
-                repeat while not (button "呼叫" of window 1 of application process "FaceTime" exists)
-                    delay 1
-                end repeat
                 click button "呼叫" of window 1 of application process "FaceTime"
             end tell
             '''
@@ -46,13 +44,16 @@ class MailRobot(object):
         typ, data = self.conn.fetch(newlist[0], '(RFC822)')
 
         msg = email.message_from_string(data[0][1].decode('utf-8'))
-        sub = msg.get('subject')
-        subdecode = email.header.decode_header(sub)[0][0].decode('utf-8')
+        sub = msg.get('Subject')
+        print('sub=', sub)
 
-        print('subject', subdecode)
+        subdecode = str(email.header.decode_header(sub)[0][0], encoding="utf-8")
+
+        print(str(datetime.datetime.now()) + '  Subject', subdecode)
 
         self.conn.store(newlist[0], '+FLAGS', '\Seen')
         return subdecode
+
 
 
 if __name__ == '__main__':
@@ -68,5 +69,11 @@ if __name__ == '__main__':
 
         if subjectstr.upper().find('ERROR') >= 0:
             robot.callfacetime()
+            # time.sleep(10)
+            # robot.callfacetime()
+
+        elif subjectstr.upper().find('SUCCESS') >= 0:
+            print(str(datetime.datetime.now()) + '  DWH Dayend has finished successfully !!!')
+            sys.exit(0)
 
         time.sleep(10)

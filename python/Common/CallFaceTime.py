@@ -1,7 +1,7 @@
 import subprocess
 
 applescript_facetime='''
-do shell script "open facetime://dennis.wang@detvista.com"
+do shell script "open facetime://+8618939933901"
 tell application "System Events"
 	repeat while not (button "呼叫" of window 1 of application process "FaceTime" exists)
 		delay 1
