@@ -62,18 +62,18 @@ if __name__ == '__main__':
         robot = MailRobot()
         subjectstr = ''
 
-        try:
-            subjectstr = robot.check()
-        except IndexError as e:
-            print(str(datetime.datetime.now()) + '  *** There is no unread mail ... ')
+        # try:
+        #     subjectstr = robot.check()
+        # except IndexError as e:
+        #     print(str(datetime.datetime.now()) + '  *** There is no unread mail ... ')
 
-        if subjectstr.upper().find('ERROR') >= 0:
-            robot.callfacetime()
-            # time.sleep(10)
-            # robot.callfacetime()
-
-        elif subjectstr.upper().find('SUCCESS') >= 0:
-            print(str(datetime.datetime.now()) + '  DWH Dayend has finished successfully !!!')
-            sys.exit(0)
-
+        # if subjectstr.upper().find('ERROR') >= 0:
+        #     robot.callfacetime()
         time.sleep(10)
+        robot.callfacetime()
+
+        # elif subjectstr.upper().find('SUCCESS') >= 0:
+        #     print(str(datetime.datetime.now()) + '  DWH Dayend has finished successfully !!!')
+        #     sys.exit(0)
+
+        # time.sleep(10)

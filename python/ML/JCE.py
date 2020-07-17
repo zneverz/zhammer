@@ -1,44 +1,25 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[24]:
-
-
 import matplotlib.pyplot as plt
-from IPython import get_ipython
-
-get_ipython().run_line_magic('matplotlib', 'inline')
 import numpy as np
 import pandas as pd
 from sklearn import datasets, linear_model
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+from sklearn.model_selection import cross_val_predict
 
 
-# In[25]:
 
 
 # Load Data From CSV
-
-data_raw = pd.read_csv('x_jce_1.csv')
+data_raw = pd.read_csv('/Users/tongjia/Desktop/CCBGJJ/ccbML/x_jce_0827.csv')
 data_raw.count()
 
-
-# In[26]:
-
-
 data_raw.shape
-
-
-# In[27]:
-
 
 data_raw.head()
 
 
-# In[28]:
-
-
 # Check every relationship between every X and y
-
 d1 = data_raw.copy()
 plt.subplot()
 plt.scatter(d1['spgz'], d1['jce'])
@@ -53,12 +34,10 @@ plt.show()
 plt.scatter(d1['xzkhs'], d1['jce'])
 plt.show()
 
+d = d1
 
-# In[29]:
 
-
-# filter data and check again
-
+# filter data and check again if necessary
 d = data_raw[data_raw['jce'] < 2000000000].copy()
 plt.subplot()
 plt.scatter(d['spgz'], d['jce'])
@@ -74,41 +53,52 @@ plt.scatter(d['xzkhs'], d['jce'])
 plt.show()
 
 
-# In[30]:
-
-
 # Define X y in Model
-
 X = d[['spgz','sjrs','xhrs','xzkhs']]
 y = d[['jce']]
 
 
-# In[31]:
-
-
 # Define Train Model
-from sklearn.cross_validation import train_test_split
-
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
 
 
-# In[18]:
-
-
 # Fit model
-
-from sklearn.linear_model import LinearRegression
 linreg = LinearRegression()
 linreg.fit(X_train, y_train)
 
 
-# In[ ]:
-
-
-# check result
-
-print(linreg.intercept_)
-print(linreg.coef_)
+# Check score
 linreg.score(X_test, y_test)
-linreg.summary()
 
+
+# Check MSE/RMSE
+y_pred = linreg.predict(X_test)
+
+
+# scikit-learn - MSE
+print("MSE:", metrics.mean_squared_error(y_test, y_pred))
+
+
+# scikit-learn - RMSE
+print("RMSE:", np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+
+
+# cross_val_predict
+predicted = cross_val_predict(linreg, X, y, cv=10)
+
+
+# scikit-learn - MSE
+print("MSE:", metrics.mean_squared_error(y, predicted))
+
+
+# scikit-learn - RMSE
+print("RMSE:", np.sqrt(metrics.mean_squared_error(y, predicted)))
+
+
+# Check result - polt
+fig, ax = plt.subplots()
+ax.scatter(y, predicted)
+ax.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=4)
+ax.set_xlabel('Measured')
+ax.set_ylabel('Predicted')
+plt.show()

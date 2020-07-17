@@ -1,19 +1,24 @@
-import smtplib
-from email.mime.text import MIMEText
+from exchangelib import FileAttachment
 
-smtp_ssl_host = 'smtp.mxhichina.com'
-smtp_ssl_port = 465
-username = 'tong.jia@detvista.com'
-password = 'Tong12121212'
-sender = 'tong.jia@detvista.com'
-targets = ['tong.jia@detvista.com']
+credentials = ServiceAccount(username='域名\用户名', password='密码')
+account = Account('邮箱', credentials=credentials, autodiscover=True)
+print('1.邮箱连接成功')
 
-msg = MIMEText('Hi, how are you today?')
-msg['Subject'] = 'Hello'
-msg['From'] = sender
-msg['To'] = ', '.join(targets)
-
-server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
-server.login(username, password)
-server.sendmail(sender, targets, msg.as_string())
-server.quit()
+for item in account.inbox.children:
+    print('2.文件夹名称:'+item.name)
+    if item.name=='Reports':#只要Reports文件夹下的附件
+        index=0
+        totalcount=0
+        page=0
+        while True:          
+            for model in item.all()[page:page+50]:
+                index=index+1
+                print(str(index)+'-开始:'+model.subject)
+                for attachment in model.attachments:
+                    if isinstance(attachment, FileAttachment):
+                        with open('/Users/cavin/Desktop/files/' + attachment.name, 'wb') as f:
+                            f.write(attachment.content)
+            if totalcount==index:
+                break
+            page=page+50
+            totalcount=index
