@@ -1,6 +1,6 @@
 import base64
 import imaplib
-import email  # 导入两个库22222
+import email  # 导入两个库333333
 mail_user = "irrn_301@hotmail.com"  # 用户名
 mail_pass = "doss301301"  # 口令
 conn = imaplib.IMAP4_SSL(port='993', host='imap-mail.outlook.com')
