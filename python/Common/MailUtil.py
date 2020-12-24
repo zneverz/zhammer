@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 
 
-mail_host = "smtp.163.com"  # 设置服务器
+mail_host = "smtp.163.com"  # 设置服务器4444
 mail_user = "iridium_301@163.com"  # 用户名
 mail_pass = "KUURFSRTDXPFNIQA"  # 口令
 
