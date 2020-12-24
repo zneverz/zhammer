@@ -1,0 +1,77 @@
+using dvSettleDataReg.Services;
+using Microsoft.AspNetCore.Mvc;
+using dvSettleDataReg.DataPatch.Models;
+using Microsoft.AspNetCore.Authorization;
+
+namespace dvSettleDataReg.Controllers
+{
+    [Route("api/contact")]
+    [Authorize(Policy = "DVAuth")]
+    public class {{DomainName}}Controller : Controller
+    {
+        private static string FLAG = "INP";
+
+        I{{DomainName}}Impl _Impl;
+
+        public {{DomainName}}Controller(I{{DomainName}}Impl Impl)
+        {
+            _Impl = Impl;
+        }
+
+        // INPUT
+
+        [HttpGet("inp/{id}")]
+        public string GetByIdInp(string id)
+        {
+            return _Impl.GetById(long.Parse(id), FLAG);
+        }
+
+        [HttpGet("inp")]
+        public string ListPageInp(int page, int size)
+        {
+            return _Impl.ListPageInp(page, size, FLAG);
+        }
+
+        [HttpGet("inp/search")]
+        public string FindByContainingInp(int page, int size, string CifNo, string NameChn, string ccy, string STARTDATE, string ENDDATE, string TRANSACTIONTYPE)
+        {
+            return _Impl.FindByContainingInp(page, size, CifNo, NameChn, FLAG, ccy, STARTDATE, ENDDATE, TRANSACTIONTYPE);
+        }
+
+        [HttpPost("inp/{eventCode}")]
+        public string AddFormDetailInp([FromBody] {{DomainName}} req, string eventCode)
+        {
+            if (eventCode.Equals("DELETE"))
+            {
+                return _Impl.DelFormDetailInp(req);
+            }
+            else
+            {
+                return _Impl.AddFormDetailInp(req);
+            }
+
+        }
+
+        [HttpGet("his/{id}")]
+        public string GetByIdHis(string id)
+        {
+            return _Impl.GetById(long.Parse(id), null);
+        }
+
+        [HttpGet("his")]
+        public string ListPageHis(int page, int size)
+        {
+            return _Impl.ListPageInp(page, size, null);
+        }
+
+        [HttpGet("his/search")]
+        public string FindByContainingHis(int page, int size, string CifNo, string NameChn, string ccy, string STARTDATE, string ENDDATE, string TRANSACTIONTYPE)
+        {
+            return _Impl.FindByContainingInp(page, size, CifNo, NameChn, null, ccy, STARTDATE, ENDDATE, TRANSACTIONTYPE);
+        }
+
+
+
+
+    }
+}

@@ -1,0 +1,54 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using dvDotNetCore.Models;
+using dvSettleDataReg.DataPatch.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+namespace dvSettleDataReg.DataPatch.Services
+{
+    public interface I{{DomainName}}HisSrv
+    {
+        {{DomainName}}His GetById(long Id);
+        {{DomainName}}His GetByPredicate(Expression<Func<{{DomainName}}His, bool>> predicate);
+
+        PaginatedListJPA<{{DomainName}}His> ListPage(int? page, int? pagesize,
+            Expression<Func<{{DomainName}}His, bool>> predicate);
+    }
+
+    public class {{DomainName}}HisSrv : I{{DomainName}}HisSrv
+    {
+        private IEntityRepo<Int64, {{DomainName}}His> _sysRepo;
+        private IConfiguration _configuration;
+
+        public {{DomainName}}HisSrv(IUnitOfWork unitOfWork)
+        {
+            _sysRepo = unitOfWork.GetNoAuditRepo<Int64, {{DomainName}}His>();
+        }
+
+        public {{DomainName}}His GetById(long Id)
+        {
+            return _sysRepo.findBy(item => item.Id == Id);
+        }
+
+        public {{DomainName}}His GetByPredicate(Expression<Func<{{DomainName}}His, bool>> predicate)
+        {
+            return _sysRepo.findBy(predicate);
+        }
+
+        public PaginatedListJPA<{{DomainName}}His> ListPage(int? page, int? pagesize,
+            Expression<Func<{{DomainName}}His, bool>> predicate)
+        {
+            if (pagesize == 0)
+            {
+                pagesize = 10;
+            }
+
+            IQueryable<{{DomainName}}His> data = _sysRepo.findAllBy(predicate);
+            return PaginatedListJPA<{{DomainName}}His>.CreateAsync(data, page ?? 0, pagesize ?? 5).Result;
+        }
+    }
+}

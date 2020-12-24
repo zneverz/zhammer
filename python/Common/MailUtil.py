@@ -5,12 +5,12 @@ from email.mime.text import MIMEText
 from email.header import Header
 
 
-mail_host = "smtp.office365.com"  # 设置服务器
-mail_user = "ewcn_app@eastwestbank.com.cn"  # 用户名
-mail_pass = "abcd@1234"  # 口令
+mail_host = "smtp.163.com"  # 设置服务器
+mail_user = "iridium_301@163.com"  # 用户名
+mail_pass = "KUURFSRTDXPFNIQA"  # 口令
 
-sender = 'ewcn_app@eastwestbank.com.cn'
-receivers = ['ewcn_app@eastwestbank.com.cn']
+sender = 'iridium_301@163.com'
+receivers = ['iridium_301@163.com']
 
 message = MIMEText('test...', 'plain', 'utf-8')
 message['From'] = Header("test", 'utf-8')
@@ -21,7 +21,9 @@ message['Subject'] = Header(subject, 'utf-8')
 
 try:
     smtpObj = smtplib.SMTP()
-    smtpObj.connect(mail_host, 443)
+    print("Connect 1 ...")
+    smtpObj.connect(mail_host, 465)
+    print("Connect 2 ...")
     smtpObj.ehlo()
     smtpObj.starttls()
     print("Connect Success ...")

@@ -1,0 +1,151 @@
+using System;
+using System.Linq.Expressions;
+using dvDotNetCore.Security;
+using dvSettleDataReg.DataPatch.Models;
+using dvSettleDataReg.DataPatch.Services;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace dvSettleDataReg.Services
+{
+    public interface I{{DomainName}}Impl
+    {
+        string GetById(long Id, string flag);
+        string ListPageInp(int? page, int? size, string flag);
+        string FindByContainingInp(int? page, int? size, string CifNo, string NameChn, string flag, string ccy, string STARTDATE , string ENDDATE);
+        string AddFormDetailInp({{DomainName}} req);
+        string DelFormDetailInp({{DomainName}} req);
+    }
+
+    public class {{DomainName}}Impl : I{{DomainName}}Impl
+    {
+        private readonly  I{{DomainName}}Srv _Srv;
+        private readonly  I{{DomainName}}HisSrv _SrvHis;
+        private readonly IHttpContextAccessor _contextAccessor;
+
+        private IsoDateTimeConverter NoTdateFormatter = new IsoDateTimeConverter
+        {
+            DateTimeFormat = "yyyy'-'MM'-'dd"
+        };
+        /**
+         * 定义常量
+         */
+        private static string FLAG = "INP";
+
+        public {{DomainName}}Impl(I{{DomainName}}Srv contact
+            , I{{DomainName}}HisSrv contactInformationAll
+            , IHttpContextAccessor contextAccessor)
+        {
+            _Srv = contact;
+            _SrvHis = contactInformationAll;
+            _contextAccessor = contextAccessor;
+        }
+
+        public string GetById(long Id, string flag)
+        {
+            if (FLAG.Equals(flag))
+            {
+                return JsonConvert.SerializeObject(_Srv.GetById(Id), NoTdateFormatter);
+            }
+            else
+            {
+                return JsonConvert.SerializeObject(_SrvHis.GetById(Id), NoTdateFormatter);
+            }
+
+        }
+
+        // INPUT
+
+        public string ListPageInp(int? page, int? size, string flag)
+        {
+            string branch = UserService.getJWTBranch(_contextAccessor?.HttpContext?.User);
+
+            if (FLAG.Equals(flag))
+            {
+                // Get information from jwt
+                Expression<Func<{{DomainName}}, bool>> predicate = item =>
+                (string.IsNullOrWhiteSpace(branch) || item.REC_BRANCH == branch);
+
+                return JsonConvert.SerializeObject(_Srv.ListPage(page, size, predicate), NoTdateFormatter);
+            }
+            else
+            {
+                Expression<Func<{{DomainName}}His, bool>> predicate = item =>
+                (string.IsNullOrWhiteSpace(branch) || item.REC_BRANCH == branch);
+
+                return JsonConvert.SerializeObject(_SrvHis.ListPage(page, size, predicate), NoTdateFormatter);
+            }
+        }
+
+
+        public string FindByContainingInp(int? page, int? size, string CifNo, string NameChn, string flag, string ccy, string STARTDATE , string ENDDATE)
+        {
+            // Get information from jwt
+            string branch = UserService.getJWTBranch(_contextAccessor?.HttpContext?.User);
+
+            DateTime start = DateTime.ParseExact("1900-01-01" , "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            DateTime end   =  DateTime.ParseExact("2099-01-01" , "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+
+            if (STARTDATE != null){
+                start =  DateTime.ParseExact(STARTDATE , "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            }
+            if (ENDDATE != null){
+                end =  DateTime.ParseExact(ENDDATE , "yyyy-MM-dd", System.Globalization.CultureInfo.CurrentCulture);
+            }
+
+            if (FLAG.Equals(flag))
+            {
+                Expression<Func<{{DomainName}}, bool>> predicate = item =>
+                (string.IsNullOrWhiteSpace(STARTDATE) || item.TRANSACTIONDATE >= start ) &&
+                (string.IsNullOrWhiteSpace(ENDDATE) || item.TRANSACTIONDATE < end )  &&
+                (string.IsNullOrWhiteSpace(ccy) || item.CURRENCY.Contains(ccy)) &&
+                (string.IsNullOrWhiteSpace(CifNo) || item.CIFNO.Contains(CifNo)) &&
+                (string.IsNullOrWhiteSpace(NameChn) || item.NAME.Contains(NameChn))&&
+                (string.IsNullOrWhiteSpace(branch) || item.REC_BRANCH == branch);
+                return JsonConvert.SerializeObject(_Srv.ListPage(page, size, predicate), NoTdateFormatter);
+            }
+            else
+            {
+                Expression<Func<{{DomainName}}His, bool>> predicate = item =>
+                (string.IsNullOrWhiteSpace(STARTDATE) || item.TRANSACTIONDATE >= start ) &&
+                (string.IsNullOrWhiteSpace(ENDDATE) || item.TRANSACTIONDATE < end )  &&
+                (string.IsNullOrWhiteSpace(ccy) || item.CURRENCY.Contains(ccy)) &&
+                (string.IsNullOrWhiteSpace(CifNo) || item.CIFNO.Contains(CifNo)) &&
+                (string.IsNullOrWhiteSpace(NameChn) || item.NAME.Contains(NameChn))&&
+                (string.IsNullOrWhiteSpace(branch) || item.REC_BRANCH == branch);
+                return JsonConvert.SerializeObject(_SrvHis.ListPage(page, size, predicate), NoTdateFormatter);
+            }
+        }
+
+        public string AddFormDetailInp({{DomainName}} req)
+        {
+            req.REC_INP = UserService.getJWTUser(_contextAccessor?.HttpContext?.User);
+            req.REC_APP = UserService.getJWTUser(_contextAccessor?.HttpContext?.User);
+            req.REC_BRANCH = UserService.getJWTBranch(_contextAccessor?.HttpContext?.User);
+            req.TRANSACTIONDATE = DateTime.Today;
+            req.REC_DATE = DateTime.Today;
+            if (string.IsNullOrWhiteSpace(req.REC_BRANCH))
+            {
+                req.REC_BRANCH = "599";
+            }
+
+
+            return JsonConvert.SerializeObject(_Srv.Save(req));
+        }
+
+        public string DelFormDetailInp({{DomainName}} req)
+        {
+            {{DomainName}} del = _Srv.GetById(req.Id);
+            del.REC_APP = UserService.getJWTUser(_contextAccessor?.HttpContext?.User);
+            del.REC_BRANCH = UserService.getJWTBranch(_contextAccessor?.HttpContext?.User);
+            if (string.IsNullOrWhiteSpace(del.REC_BRANCH))
+            {
+                del.REC_BRANCH = "599";
+            }
+            _Srv.Delete(del);
+            return  JsonConvert.SerializeObject(req);;
+        }
+
+    }
+}

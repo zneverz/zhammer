@@ -1,0 +1,127 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using dvDotNetCore.Models;
+using dvSettleDataReg.DataPatch.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+namespace dvSettleDataReg.DataPatch.Services
+{
+    public interface I{{DomainName}}Srv
+    {
+        {{DomainName}} GetById(long Id);
+        {{DomainName}} GetByPredicate(Expression<Func<{{DomainName}}, bool>> predicate);
+        {{DomainName}} Save({{DomainName}} link);
+        void Delete({{DomainName}} link);
+        IQueryable<{{DomainName}}> List();
+
+        PaginatedListJPA<{{DomainName}}> ListPage(int? page, int? pagesize,
+            Expression<Func<{{DomainName}}, bool>> predicate);
+    }
+
+    public class {{DomainName}}Srv : I{{DomainName}}Srv
+    {
+        private IEntityRepo<Int64, {{DomainName}}> _sysRepo;
+        private IEntityRepo<Int64, {{DomainName}}His> _sysHisRepo;
+        private ILogger<{{DomainName}}> _logger;
+        private IConfiguration _configuration;
+        private IUnitOfWork _unitOfWork;
+
+        public {{DomainName}}Srv(IUnitOfWork unitOfWork
+            , ILogger<{{DomainName}}> logger
+            , IConfiguration configuration)
+        {
+            _unitOfWork = unitOfWork;
+            _sysRepo = unitOfWork.GetNoAuditRepo<Int64, {{DomainName}}>();
+            _sysHisRepo = unitOfWork.GetNoAuditRepo<Int64, {{DomainName}}His>();
+            _logger = logger;
+        }
+
+        public {{DomainName}} GetById(long Id)
+        {
+            return _sysRepo.findBy(item => item.Id == Id);
+        }
+
+        public {{DomainName}} GetByPredicate(Expression<Func<{{DomainName}}, bool>> predicate)
+        {
+            return _sysRepo.findBy(predicate);
+        }
+
+        public {{DomainName}} Save({{DomainName}} link)
+        {
+            _unitOfWork.beginTrans();
+            {{DomainName}} result = new {{DomainName}}();
+            string jsons = JsonConvert.SerializeObject(link);
+            jsons = jsons.Replace("\\t", "");
+            JsonSerializer serializer = new JsonSerializer();
+            StringReader sr = new StringReader(jsons);
+            object o = serializer.Deserialize(new JsonTextReader(sr), typeof({{DomainName}}His));
+            {{DomainName}}His all = o as {{DomainName}}His;
+            all.Id = 0;
+            all.ModifyDate = DateTime.Now;
+            try
+            {
+                _sysHisRepo.save(all);
+                result =  _sysRepo.save(link);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Save Table {{DomainName}} with error: {e}", e.ToString());
+                _unitOfWork.rollbackTrans(null);
+                throw new Exception("数据库操作(保存)异常: " + e);
+            }
+            _unitOfWork.commitTrans(null);
+            return result;
+        }
+
+        public void Delete({{DomainName}} link)
+        {
+            _unitOfWork.beginTrans();
+
+            string jsons = JsonConvert.SerializeObject(link);
+            jsons = jsons.Replace("\\t", "");
+            JsonSerializer serializer = new JsonSerializer();
+            StringReader sr = new StringReader(jsons);
+            object o = serializer.Deserialize(new JsonTextReader(sr), typeof({{DomainName}}His));
+            {{DomainName}}His all = o as {{DomainName}}His;
+            all.Id = 0;
+            all.ModifyDate = DateTime.Now;
+            try
+            {
+                _sysHisRepo.save(all);
+                _sysRepo.delete(link);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Delete Table {{DomainName}} with error: {e}", e.ToString());
+                _unitOfWork.rollbackTrans(null);
+                throw new Exception("数据库操作(删除)异常: " + e);
+            }
+
+            _unitOfWork.commitTrans(null);
+
+        }
+
+        public IQueryable<{{DomainName}}> List()
+        {
+            Expression<Func<{{DomainName}}, bool>> predicate = null;
+            return _sysRepo.findAllBy(predicate);
+        }
+
+        public PaginatedListJPA<{{DomainName}}> ListPage(int? page, int? pagesize,
+            Expression<Func<{{DomainName}}, bool>> predicate)
+        {
+            if (pagesize == 0)
+            {
+                pagesize = 10;
+            }
+
+            IQueryable<{{DomainName}}> data = _sysRepo.findAllBy(predicate);
+            return PaginatedListJPA<{{DomainName}}>.CreateAsync(data, page ?? 0, pagesize ?? 5).Result;
+        }
+
+    }
+}

@@ -5,9 +5,9 @@ from email.parser import Parser
 
 from notebook.notebookapp import raw_input
 
-email = "tong.jia@detvista.com"
-password = "123123123"
-pop3_server = "pop3.mxhichina.com"
+email = "iridium_301@163.com"
+password = "KUURFSRTDXPFNIQA"
+pop3_server = "pop3.163.com"
 
 # 连接到POP3服务器:
 server = poplib.POP3(pop3_server)
@@ -22,6 +22,5 @@ server.pass_(password)
 print('Messages: %s. Size: %s' % server.stat())
 # list()返回所有邮件的编号:
 resp, mails, octets = server.list()
-# 可以查看返回的列表类似['1 82923', '2 2184', ...]
 print(mails)
 server.quit()
